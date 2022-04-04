@@ -1,0 +1,73 @@
+﻿<Window x:Class="RecApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RecApp"
+        mc:Ignorable="d"
+        Title="Rec App" Height="104" Width="518">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="RecCol" Width="1*" />
+            <ColumnDefinition x:Name="ScreenCol1" Width="1*" />
+            <ColumnDefinition x:Name="ScreenCol2" Width="1*" />
+            <ColumnDefinition x:Name="ScreenCol3" Width="1*" />
+            <ColumnDefinition x:Name="ScreenCol4" Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Label HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Record"></TextBlock>
+                <Button x:Name="RecBtn" Click="RecBtn_Click">
+                    <Image Width="30" Source="Assets\video-camera.png" x:Name="RecImg"/>
+                </Button>
+            </StackPanel>
+        </Label>
+        <Label x:Name="MicLbl" Grid.Column="1" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Microphone"></TextBlock>
+                <Button x:Name="RecMicBtn" Click="RecMicBtn_Click">
+                    <Image Width="30" Height="30" Source="Assets\microphone.png" x:Name="MicImg"/>
+                </Button>
+            </StackPanel>
+        </Label>
+        <Label x:Name="Mon1Lbl" Grid.Column="2" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Monitor 1"></TextBlock>
+                <Button x:Name="MonOnebtn" Click="MonOnebtn_Click">
+                    <Image Width="30" Source="Assets\display.png" x:Name="Mon1Img"/>
+                </Button>
+            </StackPanel>
+        </Label>
+        <Label x:Name="Mon2Lbl" Visibility="Hidden" Grid.Column="3" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Monitor 2"></TextBlock>
+                <Button x:Name="MonTwobtn" Click="MonTwobtn_Click">
+                    <Image Width="30" Source="Assets\display.png" x:Name="Mon2Img"/>
+                </Button>
+            </StackPanel>
+        </Label>
+        <Label x:Name="Mon3Lbl" Visibility="Hidden" Grid.Column="4" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Monitor 3"></TextBlock>
+                <Button x:Name="MonThreebtn" Click="MonThreebtn_Click">
+                    <Image Width="30" Source="Assets\display.png" x:Name="Mon3Img"/>
+                </Button>
+            </StackPanel>
+        </Label>
+        <Label x:Name="Mon4Lbl" Visibility="Hidden" Grid.Column="5" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" >
+                <TextBlock Text="Monitor 4"></TextBlock>
+                <Button x:Name="MonFourbtn" Click="MonFourbtn_Click">
+                    <Image Width="30" Source="Assets\display.png" x:Name="Mon4Img"/>
+                    
+                </Button>
+            </StackPanel>
+        </Label>
+
+    </Grid>
+    
+</Window>
