@@ -1,0 +1,7 @@
+﻿
+Icon Designs
+
+
+Microphone: <a href="https://www.flaticon.com/free-icons/radio" title="radio icons">Radio icons created by Freepik - Flaticon</a>
+Display: <a href="https://www.flaticon.com/free-icons/display" title="display icons">Display icons created by Ralf Schmitzer - Flaticon</a>
+Folder: <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by inkubators - Flaticon</a>

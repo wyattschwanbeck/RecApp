@@ -32,26 +32,33 @@ namespace RecApp
         private bool Recording;
         private List<RecordingSourceBase> RecordingSources;
         private RecorderOptions RecOptions;
-        
-        public void CreateRecording(int screenNum, CustomEventArgs.ScreenAreaEventArgs screenAreaEventArgs)
-        {
-            
-        }
+        private bool MicEnabled;
         private Bitmap bitmap;
         private List<System.Windows.Controls.Button> Monitors;
         private int selected;
         private RecApp.Popup SelectRegion;
         private CustomEventArgs.ScreenAreaEventArgs Sae;
-        //private Popup AreaSelect;
-        //private System.Windows.Controls.Image CaptureSectionImage;
+        private string videoPath;
+
         private List<Screen> Screens;
+
+        //private List<System.Windows.Controls.Image> MonitorButtons;
+
+        public void CreateRecording(int screenNum, CustomEventArgs.ScreenAreaEventArgs screenAreaEventArgs)
+        {
+            
+        }
+
 
         public MainWindow()
         {
-            //    < Popup x: Name = "AreaSelect" AllowsTransparency = "True" Visibility = "Hidden" >
+            
+
             List<RecordableDisplay> AllDisplayes = new List<RecordableDisplay>();
             OutputDimensions a = Recorder.GetOutputDimensionsForRecordingSources(AllDisplayes);
             Screens= new List<Screen>();
+            
+            videoPath=Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
             foreach (var screen in Screen.AllScreens.OrderBy(i => i.Bounds.X))
             {
                 Screens.Add(screen);
@@ -61,7 +68,7 @@ namespace RecApp
             {
                 List<RecordableDisplay> b = new List<RecordableDisplay>();
                 AllDisplayes.Add(new RecordableDisplay(i.ToString(), Screens[i].DeviceName));
-                //a = Recorder.GetOutputDimensionsForRecordingSources(b);
+               
                 AllDisplayes[i].OutputSize = new ScreenSize(Screens[i].Bounds.Width, Screens[i].Bounds.Height);
                 AllDisplayes[i].Position = new ScreenPoint(Screens[i].Bounds.Left, Screens[i].Bounds.Top);
                 AllDisplayes[i].RecorderApi = RecorderApi.WindowsGraphicsCapture;
@@ -92,7 +99,7 @@ namespace RecApp
                     //Stretch controls how the resizing is done, if the new aspect ratio differs.
                     Stretch = StretchMode.Uniform,
                     //SourceRect allows you to crop the output.
-                    SourceRect = new ScreenRect(Screens[0].Bounds.Left, Screens[0].Bounds.Top, Screens[0].Bounds.Width, Screens[0].Bounds.Height),
+                    SourceRect = new ScreenRect(0, 0, Screens[0].Bounds.Width, Screens[0].Bounds.Height),
 
                 },
                 AudioOptions = new AudioOptions
@@ -189,28 +196,79 @@ namespace RecApp
             
             sender.ToString();
             Console.WriteLine(e.Error);
+            //Recorder.GetSystemVideoCaptureDevices()[0]..GetDeviceRemovedReason()
+            //Console.WriteLine()
         }
-        private void RecBtn_Click(object sender, RoutedEventArgs e)
+        private async void RecBtn_Click(object sender, RoutedEventArgs e)
         {
+
             if (!Recording)
             {
-                this.RecBtn.Background = new SolidColorBrush(Colors.Red);
-                //this.RecImg.Source = new ImageSource("Assets/video-camera-Active.png");
-                Recording = true;
+                //Change the icons to reflect recording state
+                this.RecImg.Source = new BitmapImage(
+               new Uri("pack://application:,,,/Assets/video-camera-Active.png"));
 
-                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds .Left+ Sae.Left, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top, Sae.Width, Sae.Height);
+                Recording = true;
+                int AddX = 0;
+
+                if(Screens[0].Bounds.X<0)
+                {
+                    if (selected >= 1)
+                        for (int i = 1; i <=selected; i++)
+                        {
+
+                            AddX += Math.Abs(Screens[i-1].Bounds.Left);
+                        }
+                    else
+                        AddX += Math.Abs(Screens[0].Bounds.Left);
+                }
+                List<AudioDevice> inputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices);
+                List<AudioDevice> outputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.OutputDevices);
+                AudioDevice selectedOutputDevice = outputDevices.FirstOrDefault();//select one of the devices.. Passing empty string or null uses system default playback device.
+                string selectedInputDevice=null;
+                if (MicEnabled)
+                {
+                    this.MicImg.Source = new BitmapImage(
+                    new Uri("pack://application:,,,/Assets/microphone_recording.png"));
+                    selectedInputDevice = inputDevices.FirstOrDefault().DeviceName;//select one of the devices.. Passing empty string or null uses system default recording device.
+                } 
+                   
+                var AudioOptions = new AudioOptions
+                {
+                    IsAudioEnabled = true,
+                    IsOutputDeviceEnabled = true,
+                    IsInputDeviceEnabled = true,
+                    AudioOutputDevice = selectedOutputDevice.DeviceName,
+                    AudioInputDevice = selectedInputDevice
+                };
+                RecOptions.AudioOptions = AudioOptions;
+                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds .Left+ Sae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top, Sae.Width, Sae.Height);
                 RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
-                //Console.WriteLine(_rec.Status.ToString());
+
+                int AddY = 0;
+
                 _rec = Recorder.CreateRecorder(RecOptions);
                 _rec.OnRecordingFailed += Rec_OnRecordingFailed;
+
+                //videoPath = $"C:\\Users\\wyatt\\Desktop\\Test1\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4";
                 
-                string videoPath = $"C:\\Users\\wyatt\\Desktop\\Test1\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4";
-                _rec.Record(videoPath);
+                _rec.Record(videoPath + "\\" + DateTime.Now.ToString("MMddyyyyhhmmsstt") + ".mp4");
+
             }
             else
             {
-                this.RecBtn.Background = new SolidColorBrush(Colors.White);
-                
+                this.RecImg.Source = new BitmapImage(
+              new Uri("pack://application:,,,/Assets/video-camera.png"));
+                if(MicEnabled)
+                {
+
+                    this.MicImg.Source = new BitmapImage(
+                    new Uri("pack://application:,,,/Assets/microphone-selected.png"));
+                } else
+                {
+                    this.MicImg.Source = new BitmapImage(
+                    new Uri("pack://application:,,,/Assets/microphone.png"));
+                }
                 Recording = false;
                 _rec.Stop();
             }
@@ -219,38 +277,54 @@ namespace RecApp
 
         private void MonOnebtn_Click(object sender, RoutedEventArgs e)
         {
+            setButtons(0);
             selected = 0;
-                HandleScreen(0);
+            
+            HandleScreen(0);
         }
 
         private void MonTwobtn_Click(object sender, RoutedEventArgs e)
         {
-            
-                selected = 1;
-                HandleScreen(1);
+            setButtons(1);
+            selected = 1;
+            HandleScreen(1);
           
         }
 
         private void MonThreebtn_Click(object sender, RoutedEventArgs e)
         {
+
+            setButtons(2);
             selected = 2;
-            setButtons(3);
+            HandleScreen(selected);
             
         }
 
         private void MonFourbtn_Click(object sender, RoutedEventArgs e)
         {
+                
+                setButtons(3);
             selected = 3;
-            setButtons(4);
-           
+            HandleScreen(selected);
+            
         }
 
         private void setButtons(int selected)
         {
-            this.MonOnebtn.Background = new SolidColorBrush(selected == 0 ? Colors.Green : Colors.White);
-            this.MonTwobtn.Background = new SolidColorBrush(selected == 1 ? Colors.Green : Colors.White);
-            this.MonThreebtn.Background = new SolidColorBrush(selected == 2 ? Colors.Green : Colors.White);
-            this.MonFourbtn.Background = new SolidColorBrush(selected == 3 ? Colors.Green : Colors.White);
+
+            List<System.Windows.Controls.Image> MonitorButtons = new List<System.Windows.Controls.Image>();
+
+            MonitorButtons.Add(this.Mon1Img);
+            MonitorButtons.Add(this.Mon2Img);
+            MonitorButtons.Add(this.Mon3Img);
+            MonitorButtons.Add(this.Mon3Img);
+            //Unselect previously selected monitor
+            MonitorButtons[this.selected].Source = new BitmapImage(
+                new Uri("pack://application:,,,/Assets/display.png"));
+            //Select selected monitor; change image to a selected one
+            MonitorButtons[selected].Source = new BitmapImage(
+                new Uri("pack://application:,,,/Assets/monitor-selected.png"));
+
         }
 
         public void OnAreaSelected(object source, CustomEventArgs.ScreenAreaEventArgs e)
@@ -259,6 +333,7 @@ namespace RecApp
             Console.WriteLine("TEST");
         }
 
+        
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
 
@@ -271,8 +346,7 @@ namespace RecApp
 
                 SelectRegion.Close();
                 SelectRegion = null;
-            }
-           
+            } 
 
                 SelectRegion = new Popup(Screens[ScreenNum], ScreenNum);
                 SelectRegion.AreaSelected += OnAreaSelected;
@@ -331,6 +405,28 @@ namespace RecApp
 
         private void RecMicBtn_Click(object sender, RoutedEventArgs e)
         {
+            if(MicEnabled && !Recording)
+            {
+                MicEnabled = false;
+                this.MicImg.Source = new BitmapImage(
+               new Uri("pack://application:,,,/Assets/microphone.png"));
+            } else if(!Recording)
+            {
+                MicEnabled = true;
+                this.MicImg.Source = new BitmapImage(
+               new Uri("pack://application:,,,/Assets/microphone-selected.png"));
+            }
+        }
+
+        private void VidFolderSelectBtn_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog openFileDlg = new System.Windows.Forms.FolderBrowserDialog();
+            var result = openFileDlg.ShowDialog();
+            if (result.ToString() != string.Empty)
+            {
+                this.videoPath = openFileDlg.SelectedPath;
+            }
+            //root = txtPath.Text;
 
         }
     }

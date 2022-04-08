@@ -149,6 +149,24 @@
   <ItemGroup>
     <Resource Include="Assets\microphone.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\monitor-selected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\microphone-selected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\video-camera-Active.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Attributions.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\microphone_recording.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\empty-folder.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\ScreenRecorderLib.5.1.1\build\ScreenRecorderLib.targets" Condition="Exists('packages\ScreenRecorderLib.5.1.1\build\ScreenRecorderLib.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
