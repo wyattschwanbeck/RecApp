@@ -1,6 +1,7 @@
 # RecApp
 A snipping tool inspired screen recorder.
 ![Demo](demo/demo.gif)
+![Latest](demo/demo2.png)
 
 Features
 -Microphone toggle
