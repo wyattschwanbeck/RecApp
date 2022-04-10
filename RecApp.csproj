@@ -167,6 +167,9 @@
   <ItemGroup>
     <Resource Include="Assets\empty-folder.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\icon.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\ScreenRecorderLib.5.1.1\build\ScreenRecorderLib.targets" Condition="Exists('packages\ScreenRecorderLib.5.1.1\build\ScreenRecorderLib.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RecApp"
         mc:Ignorable="d"
-        Title="Rec App" Height="104" Width="518">
+        Title="Rec App" Height="104" Width="523"  MinHeight="80" MinWidth="530" Icon="Assets/icon.ico" >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="RecCol" Width="1*" />
@@ -29,7 +29,7 @@
         <Label x:Name="MicLbl" Grid.Column="1" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" >
                 <TextBlock Text="Microphone"></TextBlock>
-                <Button x:Name="RecMicBtn" Click="RecMicBtn_Click">
+                <Button x:Name="RecMicBtn" Click="RecMicBtn_Click" Width="42">
                     <Image Width="30" Height="30" Source="Assets\microphone.png" x:Name="MicImg"/>
                 </Button>
             </StackPanel>
@@ -70,7 +70,7 @@
         <Label x:Name="VidFolderSelectBtn" Grid.Column="6" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" >
                 <TextBlock Text="Video Output"></TextBlock>
-                <Button x:Name="FolderSelectBtn" Click="VidFolderSelectBtn_Click">
+                <Button x:Name="FolderSelectBtn" Click="VidFolderSelectBtn_Click" Width="41">
                     <Image Width="30" Source="Assets\empty-folder.png" x:Name="FolderSelectImg"/>
 
                 </Button>

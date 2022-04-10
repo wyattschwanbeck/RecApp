@@ -62,9 +62,13 @@ namespace RecApp
 
             rect = new Rectangle
             {
-                Stroke = Brushes.LightBlue,
-                StrokeThickness = 2
+                Stroke = Brushes.Red,
+                StrokeThickness = 2,
+                
             };
+
+            this.RectGeometry.Rect = new Rect(new Point(startPoint.X, startPoint.X), new Point(startPoint.Y, startPoint.Y));
+            
             Canvas.SetLeft(rect, startPoint.X);
             Canvas.SetTop(rect, startPoint.Y);
             canvas.Children.Add(rect);
@@ -87,7 +91,8 @@ namespace RecApp
             rect.Height = h;
             xRet = x;
             yRet = y;
-            
+            this.RectGeometry.Rect = new Rect(new Point(x, y), new Point(x+w, y+h));
+            this.CaptureSectionImage.Opacity = 100;
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
         }
@@ -96,7 +101,7 @@ namespace RecApp
         {
             OnAreaSelected();
             rect = null;
-            
+            this.RectGeometry.Rect = new Rect(new Point(0,0), new Point(0,0));
 
         }
         protected virtual void OnAreaSelected()

@@ -8,7 +8,22 @@
         Title="Popup" Height="450" Width="800" BorderThickness="0" WindowState="Maximized" WindowStyle="None">
     <Grid>
         <Canvas x:Name="canvas" MouseDown="canvas_MouseDown" MouseMove="canvas_MouseMove" MouseUp="canvas_MouseUp" Background="Transparent">
-            <Image x:Name="CaptureSectionImage"></Image>
+            
+            <Image x:Name="CaptureSectionImage" Opacity="50">
+                <Image.Clip>
+                    
+                    <CombinedGeometry GeometryCombineMode="Exclude">
+                        <CombinedGeometry.Geometry1>
+                            
+                            <RectangleGeometry x:Name="RectGeometry" Rect="0,0,10000,10000"/>
+                        </CombinedGeometry.Geometry1>
+                        <!--<CombinedGeometry.Geometry2>
+                            <EllipseGeometry Center="100,100" RadiusX="50" RadiusY="50"/>
+                        </CombinedGeometry.Geometry2>-->
+                    </CombinedGeometry>
+                </Image.Clip>
+            </Image>
+            
         </Canvas>
         
     </Grid>
