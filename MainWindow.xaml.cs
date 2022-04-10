@@ -52,7 +52,7 @@ namespace RecApp
 
         public MainWindow()
         {
-            
+            MicEnabled = false;
 
             List<RecordableDisplay> AllDisplayes = new List<RecordableDisplay>();
             OutputDimensions a = Recorder.GetOutputDimensionsForRecordingSources(AllDisplayes);
@@ -222,25 +222,30 @@ namespace RecApp
                     else
                         AddX += Math.Abs(Screens[0].Bounds.Left);
                 }
-                List<AudioDevice> inputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices);
+                
                 List<AudioDevice> outputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.OutputDevices);
                 AudioDevice selectedOutputDevice = outputDevices.FirstOrDefault();//select one of the devices.. Passing empty string or null uses system default playback device.
-                string selectedInputDevice=null;
-                if (MicEnabled)
-                {
-                    this.MicImg.Source = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/microphone_recording.png"));
-                    selectedInputDevice = inputDevices.FirstOrDefault().DeviceName;//select one of the devices.. Passing empty string or null uses system default recording device.
-                } 
+                
                    
                 var AudioOptions = new AudioOptions
                 {
                     IsAudioEnabled = true,
                     IsOutputDeviceEnabled = true,
-                    IsInputDeviceEnabled = true,
+                    IsInputDeviceEnabled = MicEnabled,
                     AudioOutputDevice = selectedOutputDevice.DeviceName,
-                    AudioInputDevice = selectedInputDevice
+                    //AudioInputDevice = selectedInputDevice
                 };
+
+                string selectedInputDevice = null;
+                if (MicEnabled)
+                {
+                    List<AudioDevice> inputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices);
+                    this.MicImg.Source = new BitmapImage(
+                    new Uri("pack://application:,,,/Assets/microphone_recording.png"));
+                    selectedInputDevice = inputDevices.FirstOrDefault().DeviceName;//select one of the devices.. Passing empty string or null uses system default recording device.
+                    AudioOptions.AudioInputDevice = selectedInputDevice;
+                    AudioOptions.IsInputDeviceEnabled = true;
+                }
                 RecOptions.AudioOptions = AudioOptions;
                 RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds .Left+ Sae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top, Sae.Width, Sae.Height);
                 RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
@@ -250,7 +255,6 @@ namespace RecApp
                 _rec = Recorder.CreateRecorder(RecOptions);
                 _rec.OnRecordingFailed += Rec_OnRecordingFailed;
 
-                //videoPath = $"C:\\Users\\wyatt\\Desktop\\Test1\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4";
                 
                 _rec.Record(videoPath + "\\" + DateTime.Now.ToString("MMddyyyyhhmmsstt") + ".mp4");
 
@@ -405,16 +409,20 @@ namespace RecApp
 
         private void RecMicBtn_Click(object sender, RoutedEventArgs e)
         {
-            if(MicEnabled && !Recording)
+            if(!Recording)
             {
-                MicEnabled = false;
-                this.MicImg.Source = new BitmapImage(
+                if (MicEnabled)
+                {
+                    MicEnabled = false;
+                    this.MicImg.Source = new BitmapImage(
                new Uri("pack://application:,,,/Assets/microphone.png"));
-            } else if(!Recording)
-            {
-                MicEnabled = true;
-                this.MicImg.Source = new BitmapImage(
-               new Uri("pack://application:,,,/Assets/microphone-selected.png"));
+                } else
+                {
+                    MicEnabled = true;
+                    this.MicImg.Source = new BitmapImage(
+                   new Uri("pack://application:,,,/Assets/microphone-selected.png"));
+                }
+                    
             }
         }
 
