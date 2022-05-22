@@ -59,7 +59,7 @@ namespace RecApp
             Screens= new List<Screen>();
             
             videoPath=Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
-            foreach (var screen in Screen.AllScreens.OrderBy(i => i.Bounds.X))
+            foreach (var screen in Screen.AllScreens.OrderBy(i => i.Bounds.X).ThenBy(i=> i.Bounds.Y))
             {
                 Screens.Add(screen);
             }
@@ -99,7 +99,7 @@ namespace RecApp
                     //Stretch controls how the resizing is done, if the new aspect ratio differs.
                     Stretch = StretchMode.Uniform,
                     //SourceRect allows you to crop the output.
-                    SourceRect = new ScreenRect(0, 0, Screens[0].Bounds.Width, Screens[0].Bounds.Height),
+                    SourceRect = new ScreenRect(Screens[0].Bounds.X, Screens[0].Bounds.Height, Screens[0].Bounds.Width, Screens[0].Bounds.Height),
 
                 },
                 AudioOptions = new AudioOptions
@@ -133,7 +133,7 @@ namespace RecApp
                 },
                 VideoEncoderOptions = new VideoEncoderOptions
                 {
-                    Bitrate = 8000 * 1000,
+                    Bitrate = 32000 * 4000,
                     Framerate = 60,
                     IsFixedFramerate = true,
                     //Currently supported are H264VideoEncoder and H265VideoEncoder
@@ -210,21 +210,34 @@ namespace RecApp
 
                 Recording = true;
                 int AddX = 0;
+                int AddY = 0;
 
-                if(Screens[0].Bounds.X<0)
-                {
-                    if (selected >= 1)
-                        for (int i = 1; i <=selected; i++)
+
+                bool preSelectNegative = false;
+                        for (int i = 1; i <=selected+1; i++)
                         {
-
-                            AddX += Math.Abs(Screens[i-1].Bounds.Left);
-                        }
-                    else
-                        AddX += Math.Abs(Screens[0].Bounds.Left);
+                            if (Screens[i-1].Bounds.X < 0)
+                            {
+                                preSelectNegative = true;
+                                
+                            }
+                            if(preSelectNegative)
+                                AddX += Math.Abs(Screens[i - 1].Bounds.X);
                 }
-                
+
+                preSelectNegative = false;
+                for (int i = 1; i <= selected+1; i++)
+                        {
+                            if (Screens[i-1].Bounds.Y < 0)
+                            {
+                                preSelectNegative = true;
+                            }
+                            if(preSelectNegative)
+                                AddY += Math.Abs(Screens[i - 1].Bounds.Y);
+                }
+
                 List<AudioDevice> outputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.OutputDevices);
-                AudioDevice selectedOutputDevice = outputDevices.FirstOrDefault();//select one of the devices.. Passing empty string or null uses system default playback device.
+                AudioDevice selectedOutputDevice = outputDevices.First();//select one of the devices.. Passing empty string or null uses system default playback device.
                 
                    
                 var AudioOptions = new AudioOptions
@@ -232,7 +245,7 @@ namespace RecApp
                     IsAudioEnabled = true,
                     IsOutputDeviceEnabled = true,
                     IsInputDeviceEnabled = MicEnabled,
-                    AudioOutputDevice = selectedOutputDevice.DeviceName,
+                    AudioOutputDevice = null,
                     //AudioInputDevice = selectedInputDevice
                 };
 
@@ -242,21 +255,19 @@ namespace RecApp
                     List<AudioDevice> inputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices);
                     this.MicImg.Source = new BitmapImage(
                     new Uri("pack://application:,,,/Assets/microphone_recording.png"));
-                    selectedInputDevice = inputDevices.FirstOrDefault().DeviceName;//select one of the devices.. Passing empty string or null uses system default recording device.
+                    selectedInputDevice = null;//select one of the devices.. Passing empty string or null uses system default recording device.
                     AudioOptions.AudioInputDevice = selectedInputDevice;
                     AudioOptions.IsInputDeviceEnabled = true;
                 }
                 RecOptions.AudioOptions = AudioOptions;
-                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds .Left+ Sae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top, Sae.Width, Sae.Height);
+                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds.Left+ Sae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top+AddY, Sae.Width, Sae.Height);
                 RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
-
-                int AddY = 0;
 
                 _rec = Recorder.CreateRecorder(RecOptions);
                 _rec.OnRecordingFailed += Rec_OnRecordingFailed;
 
                 
-                _rec.Record(videoPath + "\\" + DateTime.Now.ToString("MMddyyyyhhmmsstt") + ".mp4");
+                _rec.Record($"{videoPath}\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4");
 
             }
             else
