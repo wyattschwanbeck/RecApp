@@ -4,9 +4,11 @@ A snipping tool inspired screen recorder.
 ![Latest](demo/demo2.png)
 
 ## Features
-Microphone toggle
-Up to 4 displays handled
-Minimalistic UI
+Croppable video recording
+Microphone toggle <br>
+Up to 4 displays handled <br>
+Minimalistic UI <br>
+
 
 ### TODO/Current Issues
 Vertical screens aren't handled properly - 
@@ -17,6 +19,3 @@ Overlay - allow png files to be overlaid on video
  
 
 This is built with Windows Presentation Forms via .NET Framework and leverages ScreenRecorderLib (https://github.com/sskodje/ScreenRecorderLib)
-
-
-
