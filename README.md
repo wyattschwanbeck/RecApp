@@ -5,7 +5,7 @@ A snipping tool inspired screen recorder.
 
 ## Features
 Croppable video recording <br>
-Supportes vertical and horizontal screen orientations<br>
+Supportes varying vertical and horizontal screen orientations<br>
 Microphone toggle <br>
 Up to 4 displays handled <br>
 Minimalistic UI <br>
