@@ -26,12 +26,17 @@ namespace RecApp
         private Rectangle rect;
         private double xRet;
         private double yRet;
+        private bool setOverlay;
         public delegate void AreaSelectedEventHandler(object source, CustomEventArgs.ScreenAreaEventArgs args);
+        public delegate void OverlaySelectedEventHandler(object source, CustomEventArgs.OverlayEventArgs args);
         private int ScreenIndex;
+
         public event AreaSelectedEventHandler AreaSelected;
+        public event OverlaySelectedEventHandler OverlaySelected;
         
-        public Popup( System.Windows.Forms.Screen screen, int ScreenIndex)
+        public Popup( System.Windows.Forms.Screen screen, int ScreenIndex, bool overlay=false)
         {
+            this.setOverlay = overlay;
             this.ScreenIndex = ScreenIndex;
             screenRectangle = screen.Bounds;
             InitializeComponent();
@@ -59,14 +64,24 @@ namespace RecApp
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             startPoint = e.GetPosition(canvas);
+            if (AreaSelected != null)
+                rect = new Rectangle
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 2,
 
-            rect = new Rectangle
+                };
+            else
             {
-                Stroke = Brushes.Red,
-                StrokeThickness = 2,
-                
-            };
 
+
+                rect = new Rectangle
+                {
+                    Stroke = Brushes.Blue,
+                    StrokeThickness = 1.5,
+
+                };
+            }
             this.RectGeometry.Rect = new Rect(new Point(startPoint.X, startPoint.X), new Point(startPoint.Y, startPoint.Y));
             
             Canvas.SetLeft(rect, startPoint.X);
@@ -96,12 +111,27 @@ namespace RecApp
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
         }
-
+        private bool AreaSelectedAlready=false;
         private void canvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            OnAreaSelected();
-            rect = null;
-            this.RectGeometry.Rect = new Rect(new Point(0,0), new Point(0,0));
+            if (!AreaSelectedAlready)
+            {
+                OnAreaSelected();
+                AreaSelectedAlready = true;
+                if(!setOverlay)
+                {
+                    rect = null;
+                    this.RectGeometry.Rect = new Rect(new Point(0, 0), new Point(0, 0));
+                }
+                    
+            } else
+            {
+                OnOverlayAreaSelected();
+                rect = null;
+                this.RectGeometry.Rect = new Rect(new Point(0, 0), new Point(0, 0));
+            }
+
+            
 
         }
         protected virtual void OnAreaSelected()
@@ -111,8 +141,19 @@ namespace RecApp
                 CustomEventArgs.ScreenAreaEventArgs sae = new CustomEventArgs.ScreenAreaEventArgs { ScreenNum=ScreenIndex,Height = rect.Height, Width = rect.Width, Left = xRet, Top = yRet};
                 AreaSelected(this,sae);
             }
+            if (!setOverlay)
+                this.Close();
+        }
+        protected virtual void OnOverlayAreaSelected()
+        {
+            if (OverlaySelected != null)
+            {
+                CustomEventArgs.OverlayEventArgs oae = new CustomEventArgs.OverlayEventArgs{ Height = rect.Height, Width = rect.Width, Left = xRet, Top = yRet };
+                OverlaySelected(this, oae);
+            }
+            //if (setOverlay)
             this.Close();
         }
 
-    }
+        }
 }

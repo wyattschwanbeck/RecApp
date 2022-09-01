@@ -18,7 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using NAudio.CoreAudioApi;
 
 namespace RecApp
 {
@@ -38,7 +38,9 @@ namespace RecApp
         private int selected;
         private RecApp.Popup SelectRegion;
         private CustomEventArgs.ScreenAreaEventArgs Sae;
+        private CustomEventArgs.OverlayEventArgs Oae;
         private string videoPath;
+        private List<RecordingOverlayBase> overlays;
 
         private List<Screen> Screens;
 
@@ -153,7 +155,7 @@ namespace RecApp
                     //Low latency mode provides faster encoding, but can reduce quality.
                     IsLowLatencyEnabled = false,
                     //Fast start writes the mp4 header at the beginning of the file, to facilitate streaming.
-                    IsMp4FastStartEnabled = false
+                    IsMp4FastStartEnabled = true
                 }
             };
             //  < Image x: Name = "CaptureSectionImage" ></ Image >
@@ -199,9 +201,12 @@ namespace RecApp
             //Recorder.GetSystemVideoCaptureDevices()[0]..GetDeviceRemovedReason()
             //Console.WriteLine()
         }
+        private int AddX = 0;
+        private int AddY = 0;
         private async void RecBtn_Click(object sender, RoutedEventArgs e)
         {
-
+             AddX = 0;
+            AddY = 0;
             if (!Recording)
             {
                 //Change the icons to reflect recording state
@@ -209,67 +214,82 @@ namespace RecApp
                new Uri("pack://application:,,,/Assets/video-camera-Active.png"));
 
                 Recording = true;
-                int AddX = 0;
-                int AddY = 0;
+                AddX = 0;
+                AddY = 0;
 
 
                 bool preSelectNegative = false;
-                        for (int i = 1; i <=selected+1; i++)
-                        {
-                            if (Screens[i-1].Bounds.X < 0)
-                            {
-                                preSelectNegative = true;
-                                
-                            }
-                            if(preSelectNegative)
-                                AddX += Math.Abs(Screens[i - 1].Bounds.X);
+                for (int i = 1; i <= selected + 1; i++)
+                {
+                    if (Screens[i - 1].Bounds.X < 0)
+                    {
+                        preSelectNegative = true;
+
+                    }
+                    if (preSelectNegative)
+                        AddX += Math.Abs(Screens[i - 1].Bounds.X);
                 }
 
                 preSelectNegative = false;
-                for (int i = 1; i <= selected+1; i++)
-                        {
-                            if (Screens[i-1].Bounds.Y < 0)
-                            {
-                                preSelectNegative = true;
-                            }
-                            if(preSelectNegative)
-                                AddY += Math.Abs(Screens[i - 1].Bounds.Y);
+                for (int i = 1; i <= selected + 1; i++)
+                {
+                    if (Screens[i - 1].Bounds.Y < 0)
+                    {
+                        preSelectNegative = true;
+                    }
+                    if (preSelectNegative)
+                        AddY += Math.Abs(Screens[i - 1].Bounds.Y);
                 }
 
                 List<AudioDevice> outputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.OutputDevices);
                 AudioDevice selectedOutputDevice = outputDevices.First();//select one of the devices.. Passing empty string or null uses system default playback device.
-                
-                   
+
+
                 var AudioOptions = new AudioOptions
                 {
                     IsAudioEnabled = true,
                     IsOutputDeviceEnabled = true,
                     IsInputDeviceEnabled = MicEnabled,
-                    AudioOutputDevice = null,
-                    //AudioInputDevice = selectedInputDevice
+                    AudioOutputDevice = null
                 };
 
                 string selectedInputDevice = null;
+                setOverlay();
+
                 if (MicEnabled)
                 {
                     List<AudioDevice> inputDevices = Recorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices);
                     this.MicImg.Source = new BitmapImage(
                     new Uri("pack://application:,,,/Assets/microphone_recording.png"));
+                    
                     selectedInputDevice = null;//select one of the devices.. Passing empty string or null uses system default recording device.
                     AudioOptions.AudioInputDevice = selectedInputDevice;
                     AudioOptions.IsInputDeviceEnabled = true;
-                }
-                RecOptions.AudioOptions = AudioOptions;
-                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds.Left+ Sae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+Sae.Top+AddY, Sae.Width, Sae.Height);
-                RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
+                    //AudioOptions.AudioOutputDevice = Recorder.GetSystemAudioDevices(AudioDeviceSource.OutputDevices).IndexOf()
+                    //var waveIn = new NAudio.Wave.WaveInEvent
+                    //{
+                    //    DeviceNumber = 0, // customize this to select your microphone device
+                    //    WaveFormat = new NAudio.Wave.WaveFormat(rate: 1000, bits: 16, channels: 1),
+                    //    BufferMilliseconds = 10
+                    //};
+                    //waveIn.DataAvailable += WaveIn_DataAvailable; ;
 
+                    //waveIn.StartRecording();
+                }
+
+
+                RecOptions.AudioOptions = AudioOptions;
+                RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds.Left + Sae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Sae.Top + AddY, Sae.Width, Sae.Height);
+                RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
+                RecOptions.OverlayOptions = new OverLayOptions();
+                RecOptions.OverlayOptions.Overlays = overlays;
                 _rec = Recorder.CreateRecorder(RecOptions);
                 _rec.OnRecordingFailed += Rec_OnRecordingFailed;
 
-                
-                _rec.Record($"{videoPath}\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4");
 
+                _rec.Record($"{videoPath}\\{DateTime.Now.ToString("MMddyyyyhhmmsstt")}.mp4");
             }
+           
             else
             {
                 this.RecImg.Source = new BitmapImage(
@@ -288,6 +308,47 @@ namespace RecApp
                 _rec.Stop();
             }
             
+        }
+        private void setOverlay()
+        {
+            //Here is a list of all supported overlay types and their properties.
+            //Overlays have an offset property that is the overlay position relative to the anchor point.
+            overlays = new List<RecordingOverlayBase>();
+            //overlays.Add(new VideoCaptureOverlay
+            //{
+            //    AnchorPoint = Anchor.TopLeft,
+            //    Offset = new ScreenSize(100, 100),
+            //    Size = new ScreenSize(0, 250),
+            //    DeviceName = @"\\?\my_camera_device_name" //or null for system default camera
+            //});
+            //overlays.Add(new VideoOverlay
+            //{
+            //    AnchorPoint = Anchor.TopRight,
+            //    SourcePath = @"C:\\Users\\wyatt\\Videos\\The Witcher 3\\The Witcher 3 2022.08.29 - 21.19.48.05.DVR.mp4",
+            //    Offset = new ScreenSize(50, 50),
+            //    Size = new ScreenSize(0, 200)
+            //});
+            if (this.overlayPath != "")
+                overlays.Add(new ImageOverlay()
+                {
+                    AnchorPoint = Anchor.TopLeft,
+                    SourcePath = overlayPath,
+                    Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+ Oae.Top+AddY),
+                    Size = new ScreenSize(Oae.Width, Oae.Height),
+                    Stretch = StretchMode.Uniform
+                }) ;
+            //overlays.Add(new DisplayOverlay()
+            //{
+            //    AnchorPoint = Anchor.TopLeft,
+            //    Offset = new ScreenSize(400, 100),
+            //    Size = new ScreenSize(300, 0)
+            //});
+            //overlays.Add(new WindowOverlay()
+            //{
+            //    AnchorPoint = Anchor.BottomRight,
+            //    Offset = new ScreenSize(100, 100),
+            //    Size = new ScreenSize(300, 0)
+            //});
         }
 
         private void MonOnebtn_Click(object sender, RoutedEventArgs e)
@@ -345,10 +406,16 @@ namespace RecApp
         public void OnAreaSelected(object source, CustomEventArgs.ScreenAreaEventArgs e)
         {
             Sae = e;
-            Console.WriteLine("TEST");
+            //Console.WriteLine("TEST");
         }
 
-        
+        public void OnOverlaySelected(object source, CustomEventArgs.OverlayEventArgs e)
+        {
+            Oae = e;
+            //Console.WriteLine("TEST");
+        }
+
+        //Needed to clear the captured bitmap screenshot used to select region of screen
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
 
@@ -363,8 +430,9 @@ namespace RecApp
                 SelectRegion = null;
             } 
 
-                SelectRegion = new Popup(Screens[ScreenNum], ScreenNum);
+                SelectRegion = new Popup(Screens[ScreenNum], ScreenNum, overlayPath!=null? true:false);
                 SelectRegion.AreaSelected += OnAreaSelected;
+                SelectRegion.OverlaySelected += OnOverlaySelected;
 
                 // Calculate left/top offset regarding to primary screen (where the app runs)
                 var virtualDisplay = Screens[ScreenNum].Bounds;
@@ -444,6 +512,117 @@ namespace RecApp
             if (result.ToString() != string.Empty)
             {
                 this.videoPath = openFileDlg.SelectedPath;
+            }
+            //root = txtPath.Text;
+
+        }
+
+        private void SelectLow_Click(object sender, RoutedEventArgs e)
+        {
+            this.SelectHigh.IsChecked = false;
+            this.SelectMed.IsChecked = false;
+            this.SelectLow.IsChecked = true;
+        }
+
+        private void SelectMed_Click(object sender, RoutedEventArgs e)
+        {
+            this.SelectHigh.IsChecked = false;
+            this.SelectMed.IsChecked = true;
+            this.SelectLow.IsChecked = false;
+        }
+
+        private void SelectHigh_Click(object sender, RoutedEventArgs e)
+        {
+            this.SelectHigh.IsChecked = true;
+            this.SelectMed.IsChecked = false;
+            this.SelectLow.IsChecked = false;
+        }
+        
+        private void MenuAudioInput_Click(object sender, RoutedEventArgs e)
+        {
+
+            this.MenuAudioInput.Items.Clear();
+            using (var devices = new MMDeviceEnumerator())
+            {
+                foreach (var device in devices.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
+                {
+                    System.Windows.Controls.MenuItem AddDevice = new System.Windows.Controls.MenuItem();
+                    AddDevice.Header = device.DeviceFriendlyName;
+                    this.MenuAudioInput.Items.Add(AddDevice);
+                }
+            }
+        }
+
+        private void MenuAudioOutput_Click(object sender, RoutedEventArgs e)
+        {
+            this.MenuAudioOutput.Items.Clear();
+
+            System.Windows.Controls.MenuItem NoneDevice = new System.Windows.Controls.MenuItem();
+            System.Windows.Controls.MenuItem DefaultDevice = new System.Windows.Controls.MenuItem();
+
+            NoneDevice.Header = "None Or Default";
+            DefaultDevice.Header = "Default";
+            NoneDevice.Click += this.NoAudioOutput_Click;
+            DefaultDevice.Click += this.DefaultAudioOutput_Click;
+            this.MenuAudioOutput.Items.Add(NoneDevice);
+            using (var devices = new MMDeviceEnumerator())
+            {
+                //Dictionary<string, System.Windows.Controls.MenuItem> existingMenu = new Dictionary<string, System.Windows.Controls.MenuItem>();
+                foreach (var device in devices.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
+                { 
+                    System.Windows.Controls.MenuItem AddDevice = new System.Windows.Controls.MenuItem();
+                    AddDevice.Header = device.DeviceFriendlyName;
+                    if (!this.MenuAudioOutput.Items.Contains(device.DeviceFriendlyName))
+                        this.MenuAudioOutput.Items.Add(AddDevice);
+                    else
+                    {
+                        this.MenuAudioOutput.Items.Remove(AddDevice);
+                        this.MenuAudioOutput.Items.Add(AddDevice);
+                    }
+                    
+                }
+                
+            }
+
+        }
+
+        private void AudioInputNone_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void NoAudioOutput_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        private void DefaultAudioOutput_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void FolderSelectBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OverlaySelectBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OverlaySelectBtn_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+        private string overlayPath;
+        private void OverlaySelectBtn_Click_2(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FileDialog openFileDlg = new System.Windows.Forms.OpenFileDialog();
+            openFileDlg.Filter = "";
+            var result = openFileDlg.ShowDialog();
+            if (result.ToString() != string.Empty)
+            {
+                this.overlayPath = openFileDlg.FileName;
             }
             //root = txtPath.Text;
 
