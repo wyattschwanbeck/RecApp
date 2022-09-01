@@ -4,17 +4,17 @@ A snipping tool inspired screen recorder.
 ![Latest](demo/demo2.png)
 
 ## Features
-Croppable video recording
+Croppable video recording <br>
+Supportes varying vertical and horizontal screen orientations<br>
 Microphone toggle <br>
 Up to 4 displays handled <br>
 Minimalistic UI <br>
 
 
 ### TODO/Current Issues
-Vertical screens aren't handled properly - 
-Quality selection dropdown - Update video encoder bitrate to be multiplied by 1, 2, or 3
-Mouse click options dropdown - possible color selector
-Overlay - allow png files to be overlaid on video
+Quality selection dropdown - Update video encoder bitrate to be multiplied by 1, 2, or 3 <br>
+Mouse click options dropdown - possible color selector <br>
+Overlay - allow png files to be overlaid on video <br>
 
  
 
