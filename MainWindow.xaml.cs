@@ -326,7 +326,7 @@ namespace RecApp
             //    Offset = new ScreenSize(50, 50),
             //    Size = new ScreenSize(0, 200)
             //});
-            if (this.overlayPath != null)
+            if (this.overlayPath != null && this.Oae !=null)
             {
                 if (this.overlayPath.EndsWith("mp4"))
                 {
@@ -354,14 +354,14 @@ namespace RecApp
                     var sources = new List<RecordingSourceBase>();
                     //To get a list of recordable cameras and other video inputs on the system, you can use the static Recorder.GetSystemVideoCaptureDevices() function.
                     var allRecordableCameras = Recorder.GetSystemVideoCaptureDevices();
-                    sources.Add(allRecordableCameras.FirstOrDefault());
+                    //sources.Add(allRecordableCameras.FirstOrDefault());
                     
                     overlays.Add(new VideoCaptureOverlay
                 {
                     AnchorPoint = Anchor.TopLeft,
                     Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Oae.Top + AddY),
                     Size = new ScreenSize(Oae.Width, Oae.Height),
-                    DeviceName = allRecordableCameras.FirstOrDefault().DeviceName
+                    DeviceName = allRecordableCameras.FirstOrDefault().DeviceName == null? null : allRecordableCameras.FirstOrDefault().DeviceName
                         //DeviceName =/allRecordableCameras.FirstOrDefault()/$"\\\\?\\{GetAllConnectedCameras().First().Replace(" ","_")}" //getVidDevice.Result!=null ? getVidDevice.Result:null//@"\\?\my_camera_device_name"  or null for system default camera
                     });;
                 }
@@ -646,9 +646,9 @@ namespace RecApp
             {
                 this.overlayPath = "";
             }
-            else
+            else if(this.overlayPath=="" || this.overlayPath==null)
             {
-                //SetPath();
+                SetPath();
             }
 
         }
@@ -673,13 +673,17 @@ namespace RecApp
 
         private void gifOverlaySelected_Click(object sender, RoutedEventArgs e)
         {
-            if (this.overlayPath != null || !this.overlayPath.EndsWith("gif"))
+            this.pngOverlaySelected.IsChecked = false;
+            this.camOverlaySelected.IsChecked = false;
+            this.gifOverlaySelected.IsChecked = true;
+            this.overlayFilterSelected = "Gifs|*.gif";
+            if (this.overlayPath == null || !this.overlayPath.EndsWith("gif"))
             {
                 this.overlayPath = "";
                 SetPath();
             }
-            this.overlayFilterSelected = "Gifs|*.gif";
-            SetPath();
+            
+            //SetPath();
         }
 
 
@@ -690,7 +694,7 @@ namespace RecApp
             this.camOverlaySelected.IsChecked = false;
             this.gifOverlaySelected.IsChecked = false;
             this.overlayFilterSelected = "PNG Images|*.png";
-            if (this.overlayPath != null || !this.overlayPath.EndsWith("png"))
+            if (this.overlayPath == null || !this.overlayPath.EndsWith("png"))
             {
                 this.overlayPath = "";
                 SetPath();

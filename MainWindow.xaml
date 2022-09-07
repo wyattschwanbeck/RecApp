@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RecApp"
         mc:Ignorable="d"
-        Title="Rec App" Height="125" Width="690"  MinHeight="100" MinWidth="500" Icon="Assets/icon.ico" >
+        Title="Rec App" Height="150" Width="690"  MinHeight="150" MinWidth="500" Icon="Assets/icon.ico" >
     <Grid Margin="0,0,10,11">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="RecCol" Width="1*" />
