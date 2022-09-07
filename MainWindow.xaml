@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RecApp"
         mc:Ignorable="d"
-        Title="Rec App" Height="125" Width="682"  MinHeight="100" MinWidth="530" Icon="Assets/icon.ico" >
+        Title="Rec App" Height="125" Width="690"  MinHeight="100" MinWidth="500" Icon="Assets/icon.ico" >
     <Grid Margin="0,0,10,11">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="RecCol" Width="1*" />
@@ -19,25 +19,24 @@
             <ColumnDefinition x:Name ="SettingsCol2" Width=".80*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0" />
             <RowDefinition Height="1*" />
+            <RowDefinition Height="2.5*" />
         </Grid.RowDefinitions>
-        <Label Height="30" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="8"  >
+        <Label Height="30" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="0" VerticalAlignment="Bottom" >
             <StackPanel>
                 <ToolBar Width="60" Height="20">
                     <TextBlock Text="Settings" FontSize="9" Height="20" />
                     <Menu>
 
                         <MenuItem Header="Video Quality" >
-                            <MenuItem Header="High" x:Name="SelectHigh" Click="SelectHigh_Click" IsChecked="True" />
-                            <MenuItem Header="Medium" x:Name="SelectMed" Click="SelectMed_Click"/>
-                            <MenuItem Header="Low" x:Name="SelectLow" Click="SelectLow_Click"/>
+                            <MenuItem Header="High" x:Name="SelectHigh" Click="SelectHigh_Click" IsChecked="True"/>
+                            <MenuItem Header="Medium" x:Name="SelectMed" Click="SelectMed_Click" IsChecked="False" />
+                            <MenuItem Header="Low" x:Name="SelectLow" Click="SelectLow_Click" IsChecked="False" />
                         </MenuItem>
-                        <MenuItem Header="Audio Input" Grid.Column="1" x:Name="MenuAudioInput" Click="MenuAudioInput_Click">
-                            <MenuItem Header="None Or Default" x:Name="NoAudioInput" Click="AudioInputNone_Click" IsChecked="True" />
-                        </MenuItem>
-                        <MenuItem Header="Audio Output" Grid.Column="2" x:Name="MenuAudioOutput" Click="MenuAudioOutput_Click">
-                            
+                        <MenuItem Header="Overlay Type" Grid.Column="1" x:Name="OverlayTypeMenu" Click="OverlayTypeMenu_Click">
+                            <MenuItem Header="png" x:Name="pngOverlaySelected" Click="pngOverlaySelected_Click" IsChecked="True" />
+                            <MenuItem Header="gif" x:Name="gifOverlaySelected" Click="gifOverlaySelected_Click" IsChecked="False" />
+                            <MenuItem Header="Default Webcam" x:Name="camOverlaySelected" Click="camOverlaySelected_Click" IsChecked="False"/>
                         </MenuItem>
                     </Menu>
                 </ToolBar>
@@ -92,20 +91,20 @@
                 </Button>
             </StackPanel>
         </Label>
-        <Label x:Name="VidFolderSelectBtn" Grid.Column="6" Grid.Row="1" HorizontalAlignment="Center">
+        <Label x:Name="VidFolderSelectBtn" Grid.Column="6" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Orientation="Vertical" >
-                <TextBlock Text="Video Output"></TextBlock>
+                <TextBlock Text="Video Output" TextWrapping="Wrap"></TextBlock>
                 <Button x:Name="FolderSelectBtn" Click="VidFolderSelectBtn_Click" Width="41">
                     <Image Width="30" Source="Assets\empty-folder.png" x:Name="FolderSelectImg"/>
                 </Button>
             </StackPanel>
         </Label>
-        <Label x:Name="OverlaySelect" Grid.Column="7" Grid.Row="1" HorizontalAlignment="Center">
+        <Label x:Name="OverlaySelect" Grid.Column="7" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Orientation="Vertical" >
-                <TextBlock Text="Set Overlay Image"></TextBlock>
-                <Button x:Name="OverlaySelectBtn" Click="OverlaySelectBtn_Click_2" Width="41">
-                    <Image Width="30" Source="Assets\empty-folder.png" x:Name="OverlaySelectImg"/>
-                </Button>
+                <TextBlock TextWrapping="Wrap" Text="Use Overlay"></TextBlock>
+                <CheckBox x:Name="OverlaySelectBtn" Click="OverlaySelectBtn_Click_2" Width="41" IsChecked="False" >
+                    <!--<Image Width="30" Source="Assets\empty-folder.png" x:Name="OverlaySelectImg"/>-->
+                </CheckBox>
             </StackPanel>
         </Label>
 

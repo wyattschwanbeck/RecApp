@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,12 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using NAudio.CoreAudioApi;
-
 namespace RecApp
 {
     /// <summary>
@@ -41,7 +37,7 @@ namespace RecApp
         private CustomEventArgs.OverlayEventArgs Oae;
         private string videoPath;
         private List<RecordingOverlayBase> overlays;
-
+        private int selectedBitRate;
         private List<Screen> Screens;
 
         //private List<System.Windows.Controls.Image> MonitorButtons;
@@ -51,9 +47,9 @@ namespace RecApp
             
         }
 
-
         public MainWindow()
         {
+            this.overlayFilterSelected = "PNG Images|*.png";
             MicEnabled = false;
 
             List<RecordableDisplay> AllDisplayes = new List<RecordableDisplay>();
@@ -135,7 +131,7 @@ namespace RecApp
                 },
                 VideoEncoderOptions = new VideoEncoderOptions
                 {
-                    Bitrate = 32000 * 4000,
+                    Bitrate = this.selectedBitRate,
                     Framerate = 60,
                     IsFixedFramerate = true,
                     //Currently supported are H264VideoEncoder and H265VideoEncoder
@@ -146,7 +142,7 @@ namespace RecApp
                     },
                     //Fragmented Mp4 allows playback to start at arbitrary positions inside a video stream,
                     //instead of requiring to read the headers at the start of the stream.
-                    IsFragmentedMp4Enabled = true,
+                    //IsFragmentedMp4Enabled = true,
                     //If throttling is disabled, out of memory exceptions may eventually crash the program,
                     //depending on encoder settings and system specifications.
                     IsThrottlingDisabled = false,
@@ -281,6 +277,7 @@ namespace RecApp
                 RecOptions.AudioOptions = AudioOptions;
                 RecOptions.OutputOptions.SourceRect = new ScreenRect(Screens[Sae.ScreenNum].Bounds.Left + Sae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Sae.Top + AddY, Sae.Width, Sae.Height);
                 RecOptions.OutputOptions.OutputFrameSize = new ScreenSize(Sae.Width, Sae.Height);
+                RecOptions.VideoEncoderOptions.Bitrate = this.selectedBitRate;
                 RecOptions.OverlayOptions = new OverLayOptions();
                 RecOptions.OverlayOptions.Overlays = overlays;
                 _rec = Recorder.CreateRecorder(RecOptions);
@@ -309,6 +306,7 @@ namespace RecApp
             }
             
         }
+
         private void setOverlay()
         {
             //Here is a list of all supported overlay types and their properties.
@@ -328,15 +326,50 @@ namespace RecApp
             //    Offset = new ScreenSize(50, 50),
             //    Size = new ScreenSize(0, 200)
             //});
-            if (this.overlayPath != "")
-                overlays.Add(new ImageOverlay()
+            if (this.overlayPath != null)
+            {
+                if (this.overlayPath.EndsWith("mp4"))
+                {
+                    overlays.Add(new VideoOverlay()
+                    {
+                        AnchorPoint = Anchor.TopLeft,
+                        SourcePath = overlayPath,
+                        Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Oae.Top + AddY),
+                        Size = new ScreenSize(Oae.Width, Oae.Height),
+                        Stretch = StretchMode.Uniform
+                    });
+                }
+                else if(this.overlayPath.EndsWith("gif"))
+                {
+                    overlays.Add(new ImageOverlay()
+                    {
+                        AnchorPoint = Anchor.TopLeft,
+                        SourcePath = overlayPath,
+                        Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Oae.Top + AddY),
+                        Size = new ScreenSize(Oae.Width, Oae.Height),
+                        Stretch = StretchMode.Uniform
+                    });
+                } else if(this.overlayPath == "Default Webcam")
+                {
+                    var sources = new List<RecordingSourceBase>();
+                    //To get a list of recordable cameras and other video inputs on the system, you can use the static Recorder.GetSystemVideoCaptureDevices() function.
+                    var allRecordableCameras = Recorder.GetSystemVideoCaptureDevices();
+                    sources.Add(allRecordableCameras.FirstOrDefault());
+                    
+                    overlays.Add(new VideoCaptureOverlay
                 {
                     AnchorPoint = Anchor.TopLeft,
-                    SourcePath = overlayPath,
-                    Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left+AddX, Screens[Sae.ScreenNum].Bounds.Top+ Oae.Top+AddY),
+                    Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Oae.Top + AddY),
                     Size = new ScreenSize(Oae.Width, Oae.Height),
-                    Stretch = StretchMode.Uniform
-                }) ;
+                    DeviceName = allRecordableCameras.FirstOrDefault().DeviceName
+                        //DeviceName =/allRecordableCameras.FirstOrDefault()/$"\\\\?\\{GetAllConnectedCameras().First().Replace(" ","_")}" //getVidDevice.Result!=null ? getVidDevice.Result:null//@"\\?\my_camera_device_name"  or null for system default camera
+                    });;
+                }
+
+                
+            }
+            
+
             //overlays.Add(new DisplayOverlay()
             //{
             //    AnchorPoint = Anchor.TopLeft,
@@ -349,6 +382,21 @@ namespace RecApp
             //    Offset = new ScreenSize(100, 100),
             //    Size = new ScreenSize(300, 0)
             //});
+        }
+
+        private List<string> GetAllConnectedCameras()
+        {
+            //https://stackoverflow.com/questions/19452757/how-can-i-get-a-list-of-camera-devices-from-my-pc-c-sharp
+            var cameraNames = new List<string>();
+            using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE (PNPClass = 'Image' OR PNPClass = 'Camera')"))
+            {
+                foreach (var device in searcher.Get())
+                {
+                    cameraNames.Add(device["Name"].ToString());
+                }
+            }
+
+            return cameraNames;
         }
 
         private void MonOnebtn_Click(object sender, RoutedEventArgs e)
@@ -522,6 +570,7 @@ namespace RecApp
             this.SelectHigh.IsChecked = false;
             this.SelectMed.IsChecked = false;
             this.SelectLow.IsChecked = true;
+            this.selectedBitRate = 8000;
         }
 
         private void SelectMed_Click(object sender, RoutedEventArgs e)
@@ -529,6 +578,7 @@ namespace RecApp
             this.SelectHigh.IsChecked = false;
             this.SelectMed.IsChecked = true;
             this.SelectLow.IsChecked = false;
+            this.selectedBitRate = 16000 * 2000;
         }
 
         private void SelectHigh_Click(object sender, RoutedEventArgs e)
@@ -536,9 +586,10 @@ namespace RecApp
             this.SelectHigh.IsChecked = true;
             this.SelectMed.IsChecked = false;
             this.SelectLow.IsChecked = false;
+            this.selectedBitRate = 32000 * 4000;
         }
         
-        private void MenuAudioInput_Click(object sender, RoutedEventArgs e)
+/*        private void MenuAudioInput_Click(object sender, RoutedEventArgs e)
         {
 
             this.MenuAudioInput.Items.Clear();
@@ -551,9 +602,9 @@ namespace RecApp
                     this.MenuAudioInput.Items.Add(AddDevice);
                 }
             }
-        }
+        }*/
 
-        private void MenuAudioOutput_Click(object sender, RoutedEventArgs e)
+      /*  private void MenuAudioOutput_Click(object sender, RoutedEventArgs e)
         {
             this.MenuAudioOutput.Items.Clear();
 
@@ -584,48 +635,77 @@ namespace RecApp
                 
             }
 
-        }
-
-        private void AudioInputNone_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void NoAudioOutput_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-        private void DefaultAudioOutput_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void FolderSelectBtn_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void OverlaySelectBtn_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void OverlaySelectBtn_Click_1(object sender, RoutedEventArgs e)
-        {
-
-        }
+        }*/
         private string overlayPath;
+        private string overlayFilterSelected;
         private void OverlaySelectBtn_Click_2(object sender, RoutedEventArgs e)
         {
+
+            //root = txtPath.Text;
+            if(this.OverlaySelectBtn.IsChecked == false)
+            {
+                this.overlayPath = "";
+            }
+            else
+            {
+                //SetPath();
+            }
+
+        }
+
+        private void SetPath()
+        {
             System.Windows.Forms.FileDialog openFileDlg = new System.Windows.Forms.OpenFileDialog();
-            openFileDlg.Filter = "";
+            openFileDlg.Filter = this.overlayFilterSelected;
             var result = openFileDlg.ShowDialog();
             if (result.ToString() != string.Empty)
             {
                 this.overlayPath = openFileDlg.FileName;
             }
-            //root = txtPath.Text;
+        }
 
+        private void OverlayTypeMenu_Click(object sender, RoutedEventArgs e)
+        {
+            //this.overlayFilterSelected = "gif";
+           
+            //SetPath();
+        }
+
+        private void gifOverlaySelected_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.overlayPath != null || !this.overlayPath.EndsWith("gif"))
+            {
+                this.overlayPath = "";
+                SetPath();
+            }
+            this.overlayFilterSelected = "Gifs|*.gif";
+            SetPath();
+        }
+
+
+        private void pngOverlaySelected_Click(object sender, RoutedEventArgs e)
+        {
+            //
+            this.pngOverlaySelected.IsChecked = true;
+            this.camOverlaySelected.IsChecked = false;
+            this.gifOverlaySelected.IsChecked = false;
+            this.overlayFilterSelected = "PNG Images|*.png";
+            if (this.overlayPath != null || !this.overlayPath.EndsWith("png"))
+            {
+                this.overlayPath = "";
+                SetPath();
+            }
+        }
+
+
+        private void camOverlaySelected_Click(object sender, RoutedEventArgs e)
+        {
+            this.overlayPath = "Default Webcam";
+            this.pngOverlaySelected.IsChecked = false;
+            this.camOverlaySelected.IsChecked = true;
+            this.gifOverlaySelected.IsChecked = false;
+            
+            //setOverlay();
         }
     }
 }
