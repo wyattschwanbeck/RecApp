@@ -49,6 +49,7 @@ namespace RecApp
 
         public MainWindow()
         {
+            this.selectedBitRate = 32000*1000;
             this.overlayFilterSelected = "PNG Images|*.png";
             MicEnabled = false;
 
@@ -135,10 +136,10 @@ namespace RecApp
                     Framerate = 60,
                     IsFixedFramerate = true,
                     //Currently supported are H264VideoEncoder and H265VideoEncoder
-                    Encoder = new H264VideoEncoder
+                    Encoder = new H265VideoEncoder
                     {
-                        BitrateMode = H264BitrateControlMode.CBR,
-                        EncoderProfile = H264Profile.Main,
+                        BitrateMode = H265BitrateControlMode.CBR,
+                        EncoderProfile = H265Profile.Main,
                     },
                     //Fragmented Mp4 allows playback to start at arbitrary positions inside a video stream,
                     //instead of requiring to read the headers at the start of the stream.
@@ -194,6 +195,8 @@ namespace RecApp
             
             sender.ToString();
             Console.WriteLine(e.Error);
+            _rec.Stop();
+
             //Recorder.GetSystemVideoCaptureDevices()[0]..GetDeviceRemovedReason()
             //Console.WriteLine()
         }
@@ -303,6 +306,7 @@ namespace RecApp
                 }
                 Recording = false;
                 _rec.Stop();
+                _rec.Dispose();
             }
             
         }
@@ -570,7 +574,7 @@ namespace RecApp
             this.SelectHigh.IsChecked = false;
             this.SelectMed.IsChecked = false;
             this.SelectLow.IsChecked = true;
-            this.selectedBitRate = 8000;
+            this.selectedBitRate = 8000 * 1000;
         }
 
         private void SelectMed_Click(object sender, RoutedEventArgs e)
@@ -578,7 +582,7 @@ namespace RecApp
             this.SelectHigh.IsChecked = false;
             this.SelectMed.IsChecked = true;
             this.SelectLow.IsChecked = false;
-            this.selectedBitRate = 16000 * 2000;
+            this.selectedBitRate = 16000 * 1000;
         }
 
         private void SelectHigh_Click(object sender, RoutedEventArgs e)
@@ -586,7 +590,7 @@ namespace RecApp
             this.SelectHigh.IsChecked = true;
             this.SelectMed.IsChecked = false;
             this.SelectLow.IsChecked = false;
-            this.selectedBitRate = 32000 * 4000;
+            this.selectedBitRate = 32000 * 1000;
         }
         
 /*        private void MenuAudioInput_Click(object sender, RoutedEventArgs e)
