@@ -42,7 +42,7 @@ namespace RecApp
             screenRectangle = screen.Bounds;
             
             InitializeComponent();
-            this.CaptureSectionImage.Opacity = 80;
+            this.CaptureSectionImage.Opacity = 50;
             //instructionTxt.SetBinding(TextBlock.TextProperty, myBinding);
 
         }
@@ -79,6 +79,10 @@ namespace RecApp
                     StrokeThickness = 2,
 
                 };
+                //SolidColorBrush colorBrush = new SolidColorBrush(Colors.LightGray);
+                //colorBrush.Opacity = 0.50;
+                //Color.FromArgb(0xff, 0x8a, 0x8a, 0x8a));
+                //canvas.Background = colorBrush;
                 this.RectGeometry.Rect = new Rect(new Point(startPoint.X, startPoint.X), new Point(startPoint.Y, startPoint.Y));
                 Canvas.SetLeft(rect, startPoint.X);
                 Canvas.SetTop(rect, startPoint.Y);
@@ -117,7 +121,6 @@ namespace RecApp
             var w = Math.Max(pos.X, startPoint.X) - x;
             var h = Math.Max(pos.Y, startPoint.Y) - y;
 
-            
             xRet = x;
             yRet = y;
             if (!AreaSelectedAlready)
@@ -130,14 +133,20 @@ namespace RecApp
                 Canvas.SetTop(rect, y);
             }
                 
-            else
+            else if (overlayShape!=null)
             {
                 overlayShape.Width = w;
                 overlayShape.Height = h;
-                this.OverlayRect.Rect = new Rect(new Point(x,y), new Point(x+w, y+h));
-                //this.CaptureSectionImage.Opacity = 80;
-                //Canvas.SetLeft(rect, x);
-                //Canvas.SetTop(rect, y);
+
+                    
+                
+                this.OverlayRect.Rect = new Rect(new Point(x,y), new Point(Math.Max(this.RectGeometry.Rect.Right, x+w) , Math.Min(this.RectGeometry.Rect.Bottom,y+h)));
+                //this.OverlayRect.SetValue(LeftProperty, x);
+                //this.OverlayRect.SetValue(TopProperty, y);
+                //Console.WriteLine($"Width:{w}, Height:{h}");
+                //this.OverlayRect.= 80;
+                Canvas.SetLeft(overlayShape, x);
+                Canvas.SetTop(overlayShape, y);
             }
             
         }

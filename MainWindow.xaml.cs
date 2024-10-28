@@ -112,7 +112,7 @@ namespace RecApp
                 MouseOptions = new MouseOptions
                 {
                     //Displays a colored dot under the mouse cursor when the left mouse button is pressed.	
-                    IsMouseClicksDetected = true,
+                    IsMouseClicksDetected = ShowMouse,
                     MouseLeftClickDetectionColor = "#FFFF00",
                     MouseRightClickDetectionColor = "#FFFF00",
                     MouseClickDetectionRadius = 30,
@@ -134,16 +134,16 @@ namespace RecApp
                 {
                     Bitrate = this.selectedBitRate,
                     Framerate = 60,
-                    IsFixedFramerate = true,
+                    IsFixedFramerate = false,
                     //Currently supported are H264VideoEncoder and H265VideoEncoder
-                    Encoder = new H265VideoEncoder
+                    Encoder = new H264VideoEncoder
                     {
-                        BitrateMode = H265BitrateControlMode.CBR,
-                        EncoderProfile = H265Profile.Main,
+                        BitrateMode = H264BitrateControlMode.CBR,
+                        EncoderProfile = H264Profile.Main,
                     },
                     //Fragmented Mp4 allows playback to start at arbitrary positions inside a video stream,
                     //instead of requiring to read the headers at the start of the stream.
-                    //IsFragmentedMp4Enabled = true,
+                    IsFragmentedMp4Enabled = true,
                     //If throttling is disabled, out of memory exceptions may eventually crash the program,
                     //depending on encoder settings and system specifications.
                     IsThrottlingDisabled = false,
@@ -283,6 +283,7 @@ namespace RecApp
                 RecOptions.VideoEncoderOptions.Bitrate = this.selectedBitRate;
                 RecOptions.OverlayOptions = new OverLayOptions();
                 RecOptions.OverlayOptions.Overlays = overlays;
+                //RecOptions.MouseOptions.IsMouseClicksDetected = ShowMouse;
                 _rec = Recorder.CreateRecorder(RecOptions);
                 _rec.OnRecordingFailed += Rec_OnRecordingFailed;
 
@@ -343,7 +344,7 @@ namespace RecApp
                         Stretch = StretchMode.Uniform
                     });
                 }
-                else if(this.overlayPath.EndsWith("gif"))
+                else if(this.overlayPath.EndsWith("gif") || this.overlayPath.EndsWith("png"))
                 {
                     overlays.Add(new ImageOverlay()
                     {
@@ -365,7 +366,8 @@ namespace RecApp
                     AnchorPoint = Anchor.TopLeft,
                     Offset = new ScreenSize(Screens[Sae.ScreenNum].Bounds.Left + Oae.Left + AddX, Screens[Sae.ScreenNum].Bounds.Top + Oae.Top + AddY),
                     Size = new ScreenSize(Oae.Width, Oae.Height),
-                    DeviceName = allRecordableCameras.FirstOrDefault().DeviceName == null? null : allRecordableCameras.FirstOrDefault().DeviceName
+                    DeviceName = allRecordableCameras.FirstOrDefault().DeviceName == null? null : allRecordableCameras.FirstOrDefault().DeviceName,
+                    
                         //DeviceName =/allRecordableCameras.FirstOrDefault()/$"\\\\?\\{GetAllConnectedCameras().First().Replace(" ","_")}" //getVidDevice.Result!=null ? getVidDevice.Result:null//@"\\?\my_camera_device_name"  or null for system default camera
                     });;
                 }
@@ -504,35 +506,35 @@ namespace RecApp
                     top -= Math.Abs(virtualDisplay.Top - rectangle.Top);
                 }
 
-                // Create a bitmap of the appropriate size to receive the full-screen screenshot.
-                bitmap = new Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                //// Create a bitmap of the appropriate size to receive the full-screen screenshot.
+                //bitmap = new Bitmap(rectangle.Width, rectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-                // Draw the screenshot into our bitmap.
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen((int)left, (int)top, 0, 0, bitmap.Size);
-                }
+                //// Draw the screenshot into our bitmap.
+                //using (Graphics g = Graphics.FromImage(bitmap))
+                //{
+                //    g.CopyFromScreen((int)left, (int)top, 0, 0, bitmap.Size);
+                //}
 
-                IntPtr handle = bitmap.GetHbitmap();
-                try
-                {
-                    SelectRegion.CaptureSectionImage.Height = rectangle.Height;
-                    SelectRegion.CaptureSectionImage.Width = rectangle.Width;
-                    SelectRegion.CaptureSectionImage.Source = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
-                    SelectRegion.CaptureSectionImage.Visibility = Visibility.Visible;
-                    SelectRegion.CaptureSectionImage.Opacity = .50;
+                //IntPtr handle = bitmap.GetHbitmap();
+                //try
+                //{
+                //    SelectRegion.CaptureSectionImage.Height = rectangle.Height;
+                //    SelectRegion.CaptureSectionImage.Width = rectangle.Width;
+                //    SelectRegion.CaptureSectionImage.Source = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty,
+                //        BitmapSizeOptions.FromEmptyOptions());
+                //    SelectRegion.CaptureSectionImage.Visibility = Visibility.Visible;
+                //    SelectRegion.CaptureSectionImage.Opacity = .50;
 
-                }
-                catch (Exception)
-                {
+                //}
+                //catch (Exception)
+                //{
 
-                }
-                finally
-                {
-                    DeleteObject(handle);
+                //}
+                //finally
+                //{
+                //    DeleteObject(handle);
 
-                }
+                //}
 
                 SelectRegion.Visibility = Visibility.Visible;
            
@@ -659,12 +661,17 @@ namespace RecApp
 
         private void SetPath()
         {
+            //Opens system window to have user select a file for the overlay
             System.Windows.Forms.FileDialog openFileDlg = new System.Windows.Forms.OpenFileDialog();
             openFileDlg.Filter = this.overlayFilterSelected;
             var result = openFileDlg.ShowDialog();
-            if (result.ToString() != string.Empty)
+            if (result.ToString() != string.Empty && result.ToString() !="Cancel")
             {
                 this.overlayPath = openFileDlg.FileName;
+            } else
+            {
+                
+                this.OverlaySelectBtn.IsChecked = false;
             }
         }
 
@@ -715,5 +722,22 @@ namespace RecApp
             
             //setOverlay();
         }
+        private bool ShowMouse = false;
+        private void showMouseTrue_Click(object sender, RoutedEventArgs e)
+        {
+            this.ShowMouse = true;
+            this.ShowClickTrue.IsChecked = true;
+            this.ShowClickFalse.IsChecked = false;   
+            //SetPath();
+        }
+
+        private void showMouseFalse_Click(object sender, RoutedEventArgs e)
+        {
+            this.ShowMouse = false;
+            this.ShowClickTrue.IsChecked = false;
+            this.ShowClickFalse.IsChecked = true;
+            //SetPath();
+        }
+
     }
 }

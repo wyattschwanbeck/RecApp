@@ -17,7 +17,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\Wyatt\Desktop\RecAppRelease2\</PublishUrl>
+    <PublishUrl>C:\Users\Wyatt Schwanbeck\OneDrive\Desktop\RecAppRelease2\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -28,7 +28,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -87,10 +87,10 @@
     </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
+    <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -123,10 +123,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
-    <Reference Include="ScreenRecorderLib, Version=1.0.8149.378, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\x64\ScreenRecorderLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -274,11 +270,11 @@
     <Resource Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="packages\ScreenRecorderLib.5.2.0\build\ScreenRecorderLib.targets" Condition="Exists('packages\ScreenRecorderLib.5.2.0\build\ScreenRecorderLib.targets')" />
+  <Import Project="packages\ScreenRecorderLib.5.0.0\build\ScreenRecorderLib.targets" Condition="Exists('packages\ScreenRecorderLib.5.0.0\build\ScreenRecorderLib.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\ScreenRecorderLib.5.2.0\build\ScreenRecorderLib.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ScreenRecorderLib.5.2.0\build\ScreenRecorderLib.targets'))" />
+    <Error Condition="!Exists('packages\ScreenRecorderLib.5.0.0\build\ScreenRecorderLib.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ScreenRecorderLib.5.0.0\build\ScreenRecorderLib.targets'))" />
   </Target>
 </Project>

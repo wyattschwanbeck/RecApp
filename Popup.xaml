@@ -5,10 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RecApp"
         mc:Ignorable="d"
-        Title="Popup" Height="450" Width="800" BorderThickness="0" WindowState="Maximized" WindowStyle="None">
+        AllowsTransparency="True" Title="Popup" Height="450" Width="800" BorderThickness="0" WindowState="Maximized" WindowStyle="None">
+    <Window.Background>
+        <SolidColorBrush Opacity="0.5" Color="Black" /> 
+        
+    </Window.Background>
     <Grid>
         <Canvas x:Name="canvas" MouseDown="canvas_MouseDown" MouseMove="canvas_MouseMove" MouseUp="canvas_MouseUp" Background="Transparent">
-
             <Image x:Name="CaptureSectionImage" Opacity="50">
 
                 <Image.Clip>
@@ -37,7 +40,7 @@
                  HorizontalAlignment="Center" 
                  VerticalAlignment="Center" >
             <TextBlock.Effect>
-                <DropShadowEffect ShadowDepth="0" Color="Blue" BlurRadius="10" />
+                <DropShadowEffect ShadowDepth="0" Color="White" BlurRadius="10" />
             </TextBlock.Effect>
         </TextBlock>
     </Grid>

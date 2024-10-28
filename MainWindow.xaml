@@ -38,6 +38,12 @@
                             <MenuItem Header="gif" x:Name="gifOverlaySelected" Click="gifOverlaySelected_Click" IsChecked="False" />
                             <MenuItem Header="Default Webcam" x:Name="camOverlaySelected" Click="camOverlaySelected_Click" IsChecked="False"/>
                         </MenuItem>
+                        <MenuItem Header="Show Mouse Clicks" >
+                            <MenuItem Header="Yes" x:Name="ShowClickTrue" Click="showMouseTrue_Click" IsChecked="False"/>
+                            <MenuItem Header="No" x:Name="ShowClickFalse" Click="showMouseFalse_Click" IsChecked="True" />
+                            
+                        </MenuItem>
+                        
                     </Menu>
                 </ToolBar>
             </StackPanel>
