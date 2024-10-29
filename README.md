@@ -15,7 +15,7 @@ Minimalistic UI <br>
 
 
 ### TODO/Current Issues
-Mouse click options dropdown - possible color selector for highlight and toggle<br>
+<s>Mouse click options dropdown - possible color selector for highlight and toggle</s><br>
 Mouse click highlight position not updating upon cursor type change <br> 
 Show debug message in UI when an error occurs <br> 
 
